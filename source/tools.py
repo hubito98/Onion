@@ -14,13 +14,15 @@ class MultiplyOperation(object):
 
     def forward(self, x, y):
         self.left_node = x
+        self.left_node.derivative = 0
         self.right_node = y
+        self.right_node.derivative = 0
         self.output_node = Node(self.left_node.value * self.right_node.value)
         return self.output_node
 
     def backward(self):
-        self.left_node.derivative = self.right_node.value * self.output_node.derivative
-        self.right_node.derivative = self.left_node.value * self.output_node.derivative
+        self.left_node.derivative += self.right_node.value * self.output_node.derivative
+        self.right_node.derivative += self.left_node.value * self.output_node.derivative
 
 
 class AddOperation(object):
@@ -31,6 +33,8 @@ class AddOperation(object):
 
     def forward(self, inputs):
         self.input_nodes = inputs
+        for i in range(len(self.input_nodes)):
+            self.input_nodes[i].derivative = 0
         score = 0
         for node in self.input_nodes:
             score += node.value
@@ -39,7 +43,42 @@ class AddOperation(object):
 
     def backward(self):
         for i in range(len(self.input_nodes)):
-            self.input_nodes[i].derivative = 1 * self.output_node.derivative
+            self.input_nodes[i].derivative += 1 * self.output_node.derivative
+
+
+class Relu(object):
+
+    def __init__(self):
+        self.input_node = None
+        self.output_node = None
+
+    def forward(self, input_node):
+        self.input_node = input_node
+        self.input_node.derivative = 0
+        self.output_node = Node(max(0, self.input_node.value))
+        return self.output_node
+
+    def backward(self):
+        if self.output_node.value > 0:
+            self.input_node.derivative += 1 * self.output_node.derivative
+        else:
+            self.input_node.derivative += 0 * self.output_node.derivative
+
+
+class Linear(object):
+
+    def __init__(self):
+        self.input_node = None
+        self.output_node = None
+
+    def forward(self, input_node):
+        self.input_node = input_node
+        self.input_node.derivative = 0
+        self.output_node = Node(self.input_node.value)
+        return self.output_node
+
+    def backward(self):
+        self.input_node.derivative += 1 * self.output_node.derivative
 
 
 class MeanSquaredError(object):
@@ -51,10 +90,11 @@ class MeanSquaredError(object):
 
     def forward(self, x, correct_value):
         self.input_node = x
+        self.input_node.derivative = 0
         self.correct_value = correct_value
         self.output_node = Node((self.input_node.value - correct_value)**2)
         return self.output_node
 
     def backward(self):
-        self.input_node.derivative = \
+        self.input_node.derivative += \
             2 * (self.input_node.value - self.correct_value) * self.output_node.derivative
