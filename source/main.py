@@ -1,59 +1,29 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import random
-from neuron import *
+import tools
+import layer
+import nn
 
-
+# prepare data for train
 train_data = pd.read_csv("../data/example_data.csv")
 
-input_neuron1 = Neuron([Node(random.random())], Node(random.random()))
-input_neuron2 = Neuron([Node(random.random())], Node(random.random()))
-
-hidden_neuron1 = Neuron(weights=[
-    Node(random.random()), Node(random.random())
-], bias=Node(random.random()))
-
-hidden_neuron2 = Neuron(weights=[
-    Node(random.random()), Node(random.random())
-], bias=Node(random.random()))
-
-output_neuron = Neuron(weights=[
-    Node(random.random()), Node(random.random())
-], bias=Node(random.random()))
+# create neural network with one leyer
+neural_network = nn.Network([
+    layer.Layer(1, 1)
+], loss_function=tools.MeanSquaredError)
 
 
+# prepare list of nodes with data for training
 train_feature = list()
 train_label = list()
 
 for x, y in zip(train_data['feature'], train_data['label']):
-    train_feature.append(Node(x))
-    train_label.append(Node(y))
+    # it has to be arrays of arrays, because it's possible to have
+    # more then one feature per sample
+    train_feature.append([x])
+    # same with labels
+    train_label.append([y])
 
-
-#create MeanSquaredError object
-mse = MeanSquaredError()
-
-for i in range(10):
-    avg_loss = 0
-    for x, y in zip(train_feature, train_label):
-        # predict = neuron.forward([x])
-        # loss = mse.forward(predict, y.value)
-        # loss.derivative = 1
-        # mse.backward()
-        # neuron.backward()
-        # avg_loss += loss.value
-        i1_predict = input_neuron1.forward([x])
-        i2_predict = input_neuron2.forward([x])
-        h1_predict = hidden_neuron1.forward([i1_predict, i2_predict])
-        h2_predict = hidden_neuron2.forward([i1_predict, i2_predict])
-        output_predict = output_neuron.forward([h1_predict, h2_predict])
-        loss = mse.forward(output_predict, y.value)
-        loss.derivative = 1
-        mse.backward()
-        output_neuron.backward()
-        hidden_neuron1.backward()
-        hidden_neuron2.backward()
-        input_neuron2.backward()
-        input_neuron1.backward()
-        avg_loss += loss.value
-    print(avg_loss / len(train_label))
+# train network for 10 epochs
+neural_network.fit(train_feature[:180], train_label[:180], epochs=10)
+# evaluate it on unseen data
+neural_network.evaluate(train_feature[180:], train_label[180:])
