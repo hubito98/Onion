@@ -84,17 +84,21 @@ class Linear(object):
 class MeanSquaredError(object):
 
     def __init__(self):
-        self.input_node = None
-        self.correct_value = None
-        self.output_node = None
+        self.predict = None
+        self.correct_values = None
+        self.output = None
 
-    def forward(self, x, correct_value):
-        self.input_node = x
-        self.input_node.derivative = 0
-        self.correct_value = correct_value
-        self.output_node = Node((self.input_node.value - correct_value)**2)
-        return self.output_node
+    def forward(self, predict, label):
+        self.predict = predict
+        self.correct_values = list()
+        self.output = list()
+        for i in range(len(self.predict)):
+            self.predict[i].derivative = 0
+            self.correct_values.append(label[i].value)
+            self.output.append(Node((self.predict[i].value - self.correct_values[i])**2))
+        return self.output
 
     def backward(self):
-        self.input_node.derivative += \
-            2 * (self.input_node.value - self.correct_value) * self.output_node.derivative
+        for i in range(len(self.predict)):
+            self.predict[i].derivative += \
+                2 * (self.predict[i].value - self.correct_values[i]) * self.output[i].derivative
