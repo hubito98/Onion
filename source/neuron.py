@@ -3,7 +3,7 @@ from tools import *
 
 class Neuron(object):
 
-    def __init__(self, weights, bias, activation=None, lr=0.001):
+    def __init__(self, weights, bias, activation=None):
         self.input_size = len(weights)
         self.weights = weights
         self.bias = bias
@@ -22,7 +22,6 @@ class Neuron(object):
             self.activation = activation()
 
         self.neuron_output = None
-        self.lr = lr
 
     def forward(self, inputs):
         for i in range(self.input_size):
@@ -38,9 +37,3 @@ class Neuron(object):
         self.add_operation.backward()
         for i in range(self.input_size + 1):
             self.mul_operations[i].backward()
-
-        # applied stochastic gradient descent
-        for i in range(self.input_size):
-            current_weight = self.weights[i]
-            current_weight.value -= current_weight.derivative * self.lr
-        self.bias.value -= self.bias.derivative * self.lr

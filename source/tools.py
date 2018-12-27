@@ -1,3 +1,6 @@
+import math
+
+
 class Node(object):
 
     def __init__(self, value):
@@ -44,6 +47,23 @@ class AddOperation(object):
     def backward(self):
         for i in range(len(self.input_nodes)):
             self.input_nodes[i].derivative += 1 * self.output_node.derivative
+
+
+class Sigmoid(object):
+
+    def __init__(self):
+        self.input_node = None
+        self.output_node = None
+
+    def forward(self, input_node):
+        self.input_node = input_node
+        self.input_node.derivative = 0
+        self.output_node = Node(1/(1 + math.exp(-self.input_node.value)))
+        return self.output_node
+
+    def backward(self):
+        self.input_node.derivative += \
+            self.output_node.value * (1 - self.output_node.value) * self.output_node.derivative
 
 
 class Relu(object):
@@ -102,3 +122,43 @@ class MeanSquaredError(object):
         for i in range(len(self.predict)):
             self.predict[i].derivative += \
                 2 * (self.predict[i].value - self.correct_values[i]) * self.output[i].derivative
+
+
+class SGD(object):
+
+    def __init__(self, layers):
+        self.layers = layers
+
+    def update_parameters(self, learning_rate):
+        for layer in self.layers:
+            for neuron in layer.neurons:
+                for i in range(neuron.input_size):
+                    current_weight = neuron.weights[i]
+                    current_weight.value -= current_weight.derivative * learning_rate
+                neuron.bias.value -= neuron.bias.derivative * learning_rate
+
+
+class Momentum(object):
+
+    def __init__(self, layers):
+        self.layers = layers
+        self.velocities = list()
+        for i, layer in enumerate(layers):
+            self.velocities.append(list())
+            for j, neuron in enumerate(layer.neurons):
+                self.velocities[i].append(list())
+                for weight in neuron.weights:
+                    self.velocities[i][j].append(0)
+                self.velocities[i][j].append(0)     # one more then weights cause of bias
+
+    def update_parameters(self, learning_rate):
+        for i, layer in enumerate(self.layers):
+            for j, neuron in enumerate(layer.neurons):
+                for k in range(neuron.input_size):
+                    current_weight = neuron.weights[k]
+                    self.velocities[i][j][k] = 0.9 * self.velocities[i][j][k] +\
+                                               current_weight.derivative * learning_rate
+                    current_weight.value -= self.velocities[i][j][k]
+                self.velocities[i][j][neuron.input_size] = 0.85 * self.velocities[i][j][neuron.input_size] + \
+                                                           neuron.bias.derivative * learning_rate
+                neuron.bias.value -= self.velocities[i][j][neuron.input_size]
