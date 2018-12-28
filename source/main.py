@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 
 # prepare data for train and test
 train_data = pd.read_csv("../data/train.csv")
-test_data = pd.read_csv("../data/test.csv")
 
 data_stats = train_data.describe().transpose()
 
