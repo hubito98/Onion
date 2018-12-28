@@ -2,7 +2,7 @@
 Library for creating neural networks build from scratch.
 
 ## Use it
-Just download files from source file to your project.
+Just download files from source folder to your project.
 
 ## Create neural network
 Like it is given in main.py you have to import nn and tools and then:
