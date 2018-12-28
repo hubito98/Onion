@@ -2,7 +2,6 @@ import pandas as pd
 import tools
 import layer
 import nn
-import matplotlib.pyplot as plt
 
 # prepare data for train and test
 train_data = pd.read_csv("../data/train.csv")
@@ -54,27 +53,6 @@ for x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, y in zip(train_data[
     train_feature.append([x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13])
     # same with labels
     train_label.append([y])
-
-# prepare list of nodes for test
-test_feature = list()
-
-for x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13 in zip(test_data['rm'],
-                   test_data['lstat'],
-                   test_data['crim'],
-                   test_data['zn'],
-                   test_data['indus'],
-                   test_data['chas'],
-                   test_data['nox'],
-                   test_data['age'],
-                   test_data['dis'],
-                   test_data['rad'],
-                   test_data['tax'],
-                   test_data['ptratio'],
-                   test_data['black']):
-    # it has to be arrays of arrays, because it's possible to have
-    # more then one feature per sample
-    test_feature.append([x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13])
-
 
 # train network for 500 epochs
 neural_network.fit(train_feature[:300], train_label[:300], epochs=500, learning_rate=0.00001)
